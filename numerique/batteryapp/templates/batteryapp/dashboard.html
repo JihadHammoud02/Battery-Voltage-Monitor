@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Energy Monitor Website</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+
+<body>
+    <header>
+        <h1>Energy Monitor</h1>
+    </header>
+    <main>
+        <div class="battery">
+            <div class="battery-level">
+                <span id="battery-percent">{{value}} %</span>
+            </div>
+        </div>
+        <div class="data">
+            <div class="data-item">
+                <span class="data-label">Voltage:</span>
+                <span id="voltage-value">12.6V</span>
+                <br><br><br>
+                <span class="data-label">Consumption rate (day before):</span>
+                <span id="consumption-value">100W</span>
+                <br><br><br>
+                <span class="data-label">Threshold Value:</span>
+                <div class="input-container">
+                    <form action="{% url 'batteryapp:getThreshold' %}" method="post">
+                        {% csrf_token %}
+                        <input type="text" class="threshold-input" placeholder="Enter threshold value..."
+                            name="threshold">
+                        <button type="submit" class="save-button">Save</button>
+                    </form>
+                </div>
+            </div>
+    </main>
+    <script src="Projet.js"></script>
+    <script>
+        // get the elements from the DOM
+        const thresholdInput = document.getElementById("threshold");
+        const imageContainer = document.getElementById("image-container");
+        const saveButton = document.getElementById("save-button");
+
+        // default threshold value
+        let threshold = 50;
+
+        // function to update threshold and apply grayscale filter to image
+        function updateThresholdAndFilter() {
+            threshold = parseInt(thresholdInput.value);
+            if (isNaN(threshold)) {
+                alert("Please enter a valid number");
+                return;
+            }
+            const images = imageContainer.getElementsByTagName("img");
+            for (let i = 0; i < images.length; i++) {
+                const image = images[i];
+                image.style.filter = `grayscale(${image.dataset.grayscale}) brightness(${threshold}%)`;
+            }
+        }
+
+        // add event listeners
+        thresholdInput.addEventListener("change", updateThresholdAndFilter);
+        saveButton.addEventListener("click", () => {
+            localStorage.setItem("threshold", thresholdInput.value);
+            alert(`Threshold value (${thresholdInput.value}) saved successfully`);
+        });
+
+        // load saved threshold value, if any
+        if (localStorage.getItem("threshold")) {
+            thresholdInput.value = localStorage.getItem("threshold");
+            updateThresholdAndFilter();
+        }
+
+    </script>
+</body>
+
+</html>
